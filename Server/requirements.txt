@@ -1,0 +1,5 @@
+fastapi
+uvicorn
+unidecode
+rapidfuzz
+scikit-learn
