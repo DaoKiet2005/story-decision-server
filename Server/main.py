@@ -7,6 +7,7 @@ from sklearn.naive_bayes import MultinomialNB
 
 app = FastAPI(title="Anime Decision API")
 
+
 STORIES = {
     "Attack on Titan": [
         "attack on titan", "aot", "shingeki no kyojin", "snk",
@@ -62,6 +63,43 @@ STORIES = {
     ]
 }
 
+
+CLASSIFIED_STORIES = {
+    "HÀNH ĐỘNG / PHIÊU LƯU": [
+        "Attack on Titan",
+        "Dragon Ball",
+        "Naruto",
+        "One Piece",
+        "Hunter x Hunter",
+        "Jujutsu Kaisen",
+        "Black Clover",
+        "Vinland Saga"
+    ],
+    "KINH DỊ / BÓNG TỐI": [
+        "Tokyo Ghoul:re",
+        "Chainsaw Man"
+    ],
+    "HÀI HƯỚC / ĐỜI THƯỜNG": [
+        "Doraemon",
+        "Spy x Family"
+    ],
+    "SIÊU NHIÊN / GIẢ TƯỞNG": [
+        "Mob Psycho 100",
+        "My Hero Academia",
+        "Sailor Moon",
+        "Demon Slayer"
+    ],
+    "TRINH THÁM": [
+        "Thám Tử Lừng Danh Conan"
+    ],
+    "PHIÊU LƯU THIẾU NHI": [
+        "Pokémon Adventures"
+    ],
+    "TÂM LÝ / ĐEN TỐI": [
+        "Black Butler (Kuroshitsuji)"
+    ]
+}
+
 train_sentences = [
     "truyen hai huoc", "truyen vui",
     "truyen buon", "truyen cam dong",
@@ -85,12 +123,26 @@ def decide_story(data: dict):
     raw_question = data.get("question", "")
     question = unidecode(raw_question.lower())
 
+    if any(k in question for k in [
+        "phan loai",
+        "cac loai truyen",
+        "tong hop truyen",
+        "tat ca truyen",
+        "danh sach truyen"
+    ]):
+        return {
+            "question": raw_question,
+            "decision_type": "CLASSIFIED_ALL_STORIES",
+            "total_categories": len(CLASSIFIED_STORIES),
+            "data": CLASSIFIED_STORIES
+        }
+
     scores = {}
 
     for story, keywords in STORIES.items():
         best_score = 0
         for k in keywords:
-            if len(k) < 4: 
+            if len(k) < 4:
                 continue
             score = fuzz.partial_ratio(k, question)
             best_score = max(best_score, score)
